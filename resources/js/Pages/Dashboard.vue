@@ -1,6 +1,6 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { Head,Link } from '@inertiajs/vue3';
+import { Head,Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
 const props = defineProps({games:Object});
@@ -9,8 +9,11 @@ const games = ref(props.games.data);
 
 window.Echo.private('lobby')
     .listen('GameJoined',(event) => {
-        console.log(event);
             games.value = games.value.filter(game => game.id !== event.game.id)
+
+            if(games.value.length < 5){
+                router.reload({only:['games'], onSuccess: () => games.value = props.games.data })
+            }
         }
     );
 </script>
