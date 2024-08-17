@@ -1,8 +1,18 @@
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head,Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 const props = defineProps({games:Object});
+
+const games = ref(props.games.data);
+
+window.Echo.private('lobby')
+    .listen('GameJoined',(event) => {
+        console.log(event);
+            games.value = games.value.filter(game => game.id !== event.game.id)
+        }
+    );
 </script>
 
 <template>
@@ -24,7 +34,7 @@ const props = defineProps({games:Object});
                             <!-- List all the Joinable games -->
 
                             <ul class="divide-y mt-6">
-                                <li class="py-2 flex justify-between items-center" v-for="game in props.games.data" :key="game.id">
+                                <li class="py-2 flex justify-between items-center" v-for="game in games" :key="game.id">
                                     <span>{{ game.player_one.name }}</span>
 
                                     <Link
