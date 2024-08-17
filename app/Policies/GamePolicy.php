@@ -34,7 +34,7 @@ class GamePolicy
 
     public function join(User $user,Game $game): bool
     {
-        return $game->playerOne->id !== $user->id && $game->playerTwo->id === null;
+        return $game->playerOne->id !== $user->id && $game->playerTwo === null;
     }
 
     /**
