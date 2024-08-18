@@ -2,7 +2,7 @@
     <AuthenticatedLayout>
 
         <menu class="grid grid-cols-3 gap-1.5 w-0 min-w-fit mx-auto mt-12">
-            <li v-for="(square, index) in boardState" class="bg-gray-300 size-32 grid place-items-center">
+            <li v-for="(square, index) in boardState" class="bg-gray-300 size-24 grid place-items-center">
                 <button v-if="square === 0" @click="fillSquare(index)"
                     class="place-self-stretch bg-gray-200 hover:bg-gray-300 transition-colors"></button>
                 <span v-else v-text="square === -1 ? 'X' : 'O'" class="text-4xl font-bold"> </span>
