@@ -69,6 +69,7 @@ class GameController extends Controller
      */
     public function show(Game $game)
     {
+        $game->load(['playerOne','playerTwo']);
         return inertia('Games/Show',compact('game'));
     }
 

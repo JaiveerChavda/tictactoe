@@ -9,6 +9,27 @@
             </li>
         </menu>
 
+        <!-- show active user -->
+
+        <ul class="max-w-sm mx-auto mt-6 space-y-4" >
+            <li class="flex items-center gap-2">
+                <span class="p-1.5 font-bold rounded bg-gray-200">X</span>
+                <span>{{ game.player_one.name }}</span>
+                <span class="bg-red-500 size-2 rounded"></span>
+            </li>
+
+            <!-- player two -->
+            <li class="flex items-center gap-2" v-if="game.player_two">
+                <span class="p-1.5 font-bold rounded bg-gray-200">Y</span>
+                <span>{{ game.player_two.name }}</span>
+                <span
+                    :class="{'!bg-green-500'}"
+                    class="bg-red-500 size-2 rounded"></span>
+            </li>
+
+            <li v-else>Waiting for player two...</li>
+        </ul>
+
         <!-- show modalpop up when game state changes -->
          <Modal :show="gameState.hasEnded()" @close="resetGame()">
             <div class="p-6">
@@ -31,10 +52,11 @@
 </template>
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { ref, computed } from 'vue';
+import { ref, computed, onUnmounted } from 'vue';
 import { useGameState,gameStates } from '@/Composables/useGameState.js';
 import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
+import { router } from '@inertiajs/vue3';
 
 const gameState = useGameState();
 
@@ -48,6 +70,8 @@ const props = defineProps({
 // 1 represent O
 
 const boardState = ref([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+
+const players = ref([]);
 
 const xTurn = computed(() => boardState.value.reduce((carry, value) => carry + value, 0) === 0);
 
@@ -99,4 +123,14 @@ const resetGame = () => {
     gameState.change(gameStates.InProgress);
 }
 
+window.Echo.join(`games.${props.game.id}`)
+    .here((users) => players.value = users )
+    .joining((user) => router.reload({
+        onSuccess: () => players.value.push(user)
+    }))
+    .leaving((user) => players.value = players.value.filter(({id}) => id !== user.id ));
+
+onUnmounted(() => {
+    window.Echo.leave(`games.${props.game.id}`)
+})
 </script>
