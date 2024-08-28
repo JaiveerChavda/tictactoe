@@ -15,7 +15,9 @@
             <li class="flex items-center gap-2">
                 <span class="p-1.5 font-bold rounded bg-gray-200">X</span>
                 <span>{{ game.player_one.name }}</span>
-                <span class="bg-red-500 size-2 rounded"></span>
+                <span 
+                    :class="{'!bg-green-500': players.find(({id}) => id === game.player_one_id)}"
+                class="bg-red-500 size-2 rounded"></span>
             </li>
 
             <!-- player two -->
@@ -23,7 +25,7 @@
                 <span class="p-1.5 font-bold rounded bg-gray-200">Y</span>
                 <span>{{ game.player_two.name }}</span>
                 <span
-                    :class="{'!bg-green-500'}"
+                    :class="{'!bg-green-500':players.find(({id}) => id === game.player_two_id)}"
                     class="bg-red-500 size-2 rounded"></span>
             </li>
 
