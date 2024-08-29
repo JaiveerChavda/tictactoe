@@ -52,3 +52,8 @@ php artisan reverb:start
 # Listen for queue/Start queue
 php artisan queue:work or php artisan queue:listen
 npm
+```
+
+## Give Feedback 💬
+
+Give your feedback on [@JaiveerChavda](https://x.com/JaiveerChavda)
