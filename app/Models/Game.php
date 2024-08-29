@@ -13,7 +13,15 @@ class Game extends Model
     protected $fillable = [
         'player_one_id',
         'player_two_id',
+        'state'
     ];
+
+    public function casts(): array
+    {
+        return [
+            'state' => 'json'
+        ];
+    }
 
     public function playerOne() : BelongsTo
     {

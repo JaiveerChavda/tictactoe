@@ -71,7 +71,9 @@ const props = defineProps({
 // 0 represent space | empty
 // 1 represent O
 
-const boardState = ref([0, 0, 0, 0, 0, 0, 0, 0, 0]);
+// show game state from db if it has, else set it to default state. 
+
+const boardState = ref(props.game.state ?? [0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
 const players = ref([]);
 
@@ -95,6 +97,11 @@ const lines = [
 
 const fillSquare = (index) => {
     boardState.value[index] = xTurn.value ? -1 : 1;
+
+    router.put(route('games.update',props.game.id),{
+        state: boardState.value
+    });
+
     checkForVictory();
 }
 
