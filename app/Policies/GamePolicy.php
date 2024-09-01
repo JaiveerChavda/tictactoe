@@ -4,7 +4,6 @@ namespace App\Policies;
 
 use App\Models\Game;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class GamePolicy
 {
@@ -32,7 +31,7 @@ class GamePolicy
         //
     }
 
-    public function join(User $user,Game $game): bool
+    public function join(User $user, Game $game): bool
     {
         return $game->playerOne->id !== $user->id && $game->playerTwo === null;
     }

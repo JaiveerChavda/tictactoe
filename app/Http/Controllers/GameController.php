@@ -16,10 +16,10 @@ class GameController extends Controller
      */
     public function index(Request $request)
     {
-        return inertia('Dashboard',[
+        return inertia('Dashboard', [
             'games' => Game::with('playerOne')
                 ->whereNull('player_two_id')
-                ->where('player_one_id','!=',$request->user()->id)
+                ->where('player_one_id', '!=', $request->user()->id)
                 ->oldest()
                 ->simplePaginate(100),
         ]);
@@ -39,22 +39,21 @@ class GameController extends Controller
     public function store(Request $request)
     {
         $game = Game::create([
-            'player_one_id' => $request->user()->id
+            'player_one_id' => $request->user()->id,
         ]);
 
-        return to_route('games.show',$game);
+        return to_route('games.show', $game);
     }
 
-     /**
+    /**
      * Join a game
      * only user other then the owner of game
      * can join the game, that's why we also implemented join policy
      * to prevent the creator of the game to join his own game
      */
-
-    public function join(Request $request,Game $game)
+    public function join(Request $request, Game $game)
     {
-        Gate::authorize('join',$game);
+        Gate::authorize('join', $game);
 
         $game->update([
             'player_two_id' => $request->user()->id,
@@ -62,7 +61,7 @@ class GameController extends Controller
 
         GameJoined::dispatch($game);
 
-        return to_route('games.show',$game);
+        return to_route('games.show', $game);
     }
 
     /**
@@ -70,8 +69,9 @@ class GameController extends Controller
      */
     public function show(Game $game)
     {
-        $game->load(['playerOne','playerTwo']);
-        return inertia('Games/Show',compact('game'));
+        $game->load(['playerOne', 'playerTwo']);
+
+        return inertia('Games/Show', compact('game'));
     }
 
     /**
@@ -88,15 +88,15 @@ class GameController extends Controller
     public function update(Request $request, Game $game)
     {
         $data = $request->validate([
-            'state' => ['required','array','size:9'],
-            'state.*' => ['integer','between:-1,1']
+            'state' => ['required', 'array', 'size:9'],
+            'state.*' => ['integer', 'between:-1,1'],
         ]);
 
         $game->update($data);
-        
+
         broadcast(new PlayerMadeMove($game))->toOthers();
 
-        return to_route('games.show',$game);
+        return to_route('games.show', $game);
     }
 
     /**

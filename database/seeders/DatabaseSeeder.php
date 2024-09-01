@@ -12,7 +12,6 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-
     public function run(): void
     {
         User::factory(10)->has(Game::factory())->create();
@@ -24,7 +23,7 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'name' => 'jaiveer',
-            'email' => 'jaiveer@example.com'
+            'email' => 'jaiveer@example.com',
         ]);
     }
 }
