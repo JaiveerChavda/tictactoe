@@ -11,25 +11,19 @@
 
         <!-- show active user -->
 
-        <ul class="max-w-sm mx-auto mt-6 space-y-4" >
+        <ul class="max-w-sm mx-auto mt-6 space-y-4">
             <li class="flex items-center gap-2">
-                <span
-                :class="{'bg-green-300': xTurn}" 
-                    class="p-1.5 font-bold rounded bg-gray-200">X</span>
+                <span :class="{ 'bg-green-300': xTurn }" class="p-1.5 font-bold rounded bg-gray-200">X</span>
                 <span>{{ game.player_one.name }}</span>
-                <span 
-                    :class="{'!bg-green-500': players.find(({id}) => id === game.player_one_id)}"
-                class="bg-red-500 size-2 rounded"></span>
+                <span :class="{ '!bg-green-500': players.find(({ id }) => id === game.player_one_id) }"
+                    class="bg-red-500 size-2 rounded"></span>
             </li>
 
             <!-- player two -->
             <li class="flex items-center gap-2" v-if="game.player_two">
-                <span
-                    :class="{'bg-green-300': ! xTurn}" 
-                    class="p-1.5 font-bold rounded bg-gray-200">Y</span>
+                <span :class="{ 'bg-green-300': !xTurn }" class="p-1.5 font-bold rounded bg-gray-200">Y</span>
                 <span>{{ game.player_two.name }}</span>
-                <span
-                    :class="{'!bg-green-500':players.find(({id}) => id === game.player_two_id)}"
+                <span :class="{ '!bg-green-500': players.find(({ id }) => id === game.player_two_id) }"
                     class="bg-red-500 size-2 rounded"></span>
             </li>
 
@@ -37,14 +31,14 @@
         </ul>
 
         <!-- show modalpop up when game state changes -->
-         <Modal :show="gameState.hasEnded()" @close="resetGame()">
+        <Modal :show="gameState.hasEnded()" @close="resetGame()">
             <div class="p-6">
 
                 <!-- // show the winner content -->
                 <div class="text-6xl font-bold text-center my-12 font-mono uppercase">
                     <span v-if="gameState.current() === gameStates.OWins" class="text-green-600">O has won!</span>
                     <span v-else-if="gameState.current() === gameStates.XWins" class="text-green-600">X has won!</span>
-                    <span v-else class="text-orange-600" >Stalemate!</span>
+                    <span v-else class="text-orange-600">Stalemate!</span>
                 </div>
 
                 <!-- //play again -->
@@ -52,17 +46,17 @@
                     <PrimaryButton @click="resetGame()">Play Again</PrimaryButton>
                 </div>
             </div>
-         </Modal>
+        </Modal>
 
     </AuthenticatedLayout>
 </template>
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
-import { ref, computed, onUnmounted } from 'vue';
-import { useGameState,gameStates } from '@/Composables/useGameState.js';
+import { ref, computed, onUnmounted, onMounted } from 'vue';
+import { useGameState, gameStates } from '@/Composables/useGameState.js';
 import Modal from '@/Components/Modal.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
-import { router,usePage } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
 
@@ -87,11 +81,11 @@ const players = ref([]);
 const xTurn = computed(() => boardState.value.reduce((carry, value) => carry + value, 0) === 0);
 
 const yourTurn = computed(() => {
-    if(page.props.auth.user.id === props.game.player_one.id){
+    if (page.props.auth.user.id === props.game.player_one.id) {
         return xTurn.value;
     }
 
-    return ! xTurn.value;
+    return !xTurn.value;
 })
 
 const lines = [
@@ -111,31 +105,36 @@ const lines = [
 ]
 
 const channel = window.Echo.join(`games.${props.game.id}`)
-    .here((users) => players.value = users )
+    .here((users) => players.value = users)
     .joining((user) => router.reload({
         onSuccess: () => players.value.push(user)
     }))
-    .leaving((user) => players.value = players.value.filter(({id}) => id !== user.id ))
-    .listenForWhisper('PlayerMadeMove',({state}) => {
+    .leaving((user) => players.value = players.value.filter(({ id }) => id !== user.id))
+    .listenForWhisper('PlayerMadeMove', ({ state }) => {
         boardState.value = state;
         checkForVictory();
     });
 
+const updateOpponent = () => {
+
+    router.put(route('games.update', props.game.id), {
+        state: boardState.value
+    });
+
+    channel.whisper('PlayerMadeMove', {
+        state: boardState.value
+    });
+}
+
 const fillSquare = (index) => {
 
-    if(! yourTurn.value){
+    if (!yourTurn.value) {
         return;
     }
 
     boardState.value[index] = xTurn.value ? -1 : 1;
 
-    router.put(route('games.update',props.game.id),{
-        state: boardState.value
-    });
-
-    channel.whisper('PlayerMadeMove',{
-        state: boardState.value
-    })
+    updateOpponent();
 
     checkForVictory();
 }
@@ -169,11 +168,11 @@ const resetGame = () => {
     boardState.value.fill(0);
     gameState.change(gameStates.InProgress);
 
-    //reset game state in database also
-    router.put(route('games.update',props.game.id),{
-        state: boardState.value
-    });
+    //whisper and reset game state in database also
+    updateOpponent();
 }
+
+onMounted(checkForVictory);
 
 onUnmounted(() => {
     window.Echo.leave(`games.${props.game.id}`)
