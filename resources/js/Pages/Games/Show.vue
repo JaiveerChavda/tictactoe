@@ -110,6 +110,17 @@ const lines = [
     [2, 4, 6]
 ]
 
+const channel = window.Echo.join(`games.${props.game.id}`)
+    .here((users) => players.value = users )
+    .joining((user) => router.reload({
+        onSuccess: () => players.value.push(user)
+    }))
+    .leaving((user) => players.value = players.value.filter(({id}) => id !== user.id ))
+    .listenForWhisper('PlayerMadeMove',({state}) => {
+        boardState.value = state;
+        checkForVictory();
+    });
+
 const fillSquare = (index) => {
 
     if(! yourTurn.value){
@@ -121,6 +132,10 @@ const fillSquare = (index) => {
     router.put(route('games.update',props.game.id),{
         state: boardState.value
     });
+
+    channel.whisper('PlayerMadeMove',{
+        state: boardState.value
+    })
 
     checkForVictory();
 }
@@ -159,17 +174,6 @@ const resetGame = () => {
         state: boardState.value
     });
 }
-
-window.Echo.join(`games.${props.game.id}`)
-    .here((users) => players.value = users )
-    .joining((user) => router.reload({
-        onSuccess: () => players.value.push(user)
-    }))
-    .leaving((user) => players.value = players.value.filter(({id}) => id !== user.id ))
-    .listen('PlayerMadeMove',(e) => {
-        boardState.value = e.game.state;
-        checkForVictory();
-    });
 
 onUnmounted(() => {
     window.Echo.leave(`games.${props.game.id}`)
