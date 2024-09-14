@@ -38,7 +38,7 @@ window.Echo.private('lobby')
 
                             <ul class="divide-y mt-6">
                                 <li class="py-2 flex justify-between items-center" v-for="game in games" :key="game.id">
-                                    <span>{{ game.player_one.name }}</span>
+                                    <span>{{ game.player_one.name }}'s Game</span>
 
                                     <Link
                                         :href="route('games.join', game.id)"
